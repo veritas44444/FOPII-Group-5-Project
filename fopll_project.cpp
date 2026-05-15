@@ -36,7 +36,7 @@ void openDatabase() {
     executeSQL("PRAGMA foreign_keys = ON;");
 }
 -----------------------------------------------------------------
-
+Enjifeto
 ------------------------------------------------------------------
 void createTables() {
     string sql;
@@ -186,3 +186,170 @@ bool getAccountBranchID(const string& accountNo, string& branchID) {
     return found;
 }
 //Branch
+-----------------------------------------------------------------
+Elsa
+------------------------------------------------------------------
+-----------------------------------------------------------------
+Elabem
+------------------------------------------------------------------
+-----------------------------------------------------------------
+Kasim
+------------------------------------------------------------------
+void displayTransactions() {
+    displayQuery("TRANSACTION LIST",
+        "SELECT TransactionID, AccountNo, BranchID, TransactionType, Amount, TransactionDate FROM Transactions;");
+}
+void deposit(const string& accountNo) {
+    cout << "\n===== DEPOSIT =====\n";
+    double amount = getDouble("Deposit Amount: ");
+    string transactionID = generateID("Transactions", "TransactionID", "T");
+    string transactionDate = getText("Transaction Date: ");
+
+    string branchID;
+    if (!getAccountBranchID(accountNo, branchID)) {
+        cout << "Account not found.\n";
+        return;
+    }
+
+    string updateSQL = "UPDATE Account SET Balance = Balance + ? WHERE AccountNo = ?;";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, updateSQL.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_double(stmt, 1, amount);
+    sqlite3_bind_text(stmt,   2, accountNo.c_str(), -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        cerr << "Deposit update failed: " << sqlite3_errmsg(db) << endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+    sqlite3_finalize(stmt);
+
+    string insertSQL = "INSERT INTO Transactions VALUES(?, ?, ?, ?, ?, ?);";
+    if (sqlite3_prepare_v2(db, insertSQL.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt,   1, transactionID.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   2, accountNo.c_str(),       -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   3, branchID.c_str(),        -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   4, "Deposit",               -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 5, amount);
+    sqlite3_bind_text(stmt,   6, transactionDate.c_str(), -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Transaction log failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Deposit successful.\n"
+             << "Generated Transaction ID: " << transactionID << endl;
+
+    sqlite3_finalize(stmt);
+}
+
+void withdraw(const string& accountNo) {
+    cout << "\n===== WITHDRAW =====\n";
+    double amount = getDouble("Withdrawal Amount: ");
+    string transactionID = generateID("Transactions", "TransactionID", "T");
+    string transactionDate = getText("Transaction Date: ");
+
+    string branchID;
+    if (!getAccountBranchID(accountNo, branchID)) {
+        cout << "Account not found.\n";
+        return;
+    }
+
+    string updateSQL = "UPDATE Account SET Balance = Balance - ? WHERE AccountNo = ? AND Balance >= ?;";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, updateSQL.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_double(stmt, 1, amount);
+    sqlite3_bind_text(stmt,   2, accountNo.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 3, amount);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        cerr << "Withdraw update failed: " << sqlite3_errmsg(db) << endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+
+    int changed = sqlite3_changes(db);
+    sqlite3_finalize(stmt);
+
+    if (changed == 0) {
+        cout << "Insufficient balance.\n";
+        return;
+    }
+
+    string insertSQL = "INSERT INTO Transactions VALUES(?, ?, ?, ?, ?, ?);";
+    if (sqlite3_prepare_v2(db, insertSQL.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt,   1, transactionID.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   2, accountNo.c_str(),       -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   3, branchID.c_str(),        -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   4, "Withdrawal",            -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 5, amount);
+    sqlite3_bind_text(stmt,   6, transactionDate.c_str(), -1, SQLITE_TRANSIENT);
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Transaction log failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Withdrawal successful.\n"
+             << "Generated Transaction ID: " << transactionID << endl;
+
+    sqlite3_finalize(stmt);
+}
+
+void viewMyAccount(const string& accountNo) {
+    string sql = "SELECT AccountNo, CustomerID, BranchID, AccountType, Balance "
+                 "FROM Account WHERE AccountNo = '" + accountNo + "';";
+    displayQuery("MY ACCOUNT DETAILS", sql);
+}
+
+void viewMyTransactions(const string& accountNo) {
+    string sql = "SELECT TransactionID, TransactionType, Amount, TransactionDate, BranchID "
+                 "FROM Transactions WHERE AccountNo = '" + accountNo + "';";
+    displayQuery("MY TRANSACTION HISTORY", sql);
+}
+-----------------------------------------------------------------
+Enjifeto
+------------------------------------------------------------------
+void userMenu(const string& accountNo) {
+    int choice;
+    do {
+        cout << "\n****************************************\n";
+        cout << "        USER PANEL  [Acc: " << accountNo << "]\n";
+        cout << "******************************************\n";
+        cout << "1.  View My Account Details\n";
+        cout << "2.  View My Transaction History\n";
+        cout << "3.  Deposit\n";
+        cout << "4.  Withdraw\n";
+        cout << "5.  Logout\n";
+        cout << "*******************************\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: viewMyAccount(accountNo); break;
+            case 2: viewMyTransactions(accountNo); break;
+            case 3: deposit(accountNo); break;
+            case 4: withdraw(accountNo); break;
+            case 5: cout << "Logging out...\n"; break;
+            default: cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 5);
+}
+-----------------------------------------------------------------
+Enjifeto
+------------------------------------------------------------------
