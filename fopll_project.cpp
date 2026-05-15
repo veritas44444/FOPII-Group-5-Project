@@ -186,9 +186,75 @@ bool getAccountBranchID(const string& accountNo, string& branchID) {
     return found;
 }
 //Branch
------------------------------------------------------------------
-Elsa
-------------------------------------------------------------------
+    void addBranch() {
+   cout << "\n===== ADD BRANCH =====\n";
+  string branchID = generateID("Branch", "BranchID", "B");
+  string branchName = getText("Branch Name: ");
+  string location = getText("Location: ");
+  string phone = getText("Phone: ");
+ 
+  string sql = "INSERT INTO Branch VALUES(?, ?, ?, ?);";
+    sqlite3_stmt* stmt = nullptr;
+ 
+  if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+  return;
+  }
+ 
+  sqlite3_bind_text(stmt, 1, branchID.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, branchName.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, location.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 4, phone.c_str(), -1, SQLITE_TRANSIENT);
+ 
+  if (sqlite3_step(stmt) != SQLITE_DONE)
+  cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+else
+  cout << "Branch added successfully.\n"
+  << "Generated Branch ID: " << branchID << endl;
+ 
+  sqlite3_finalize(stmt);
+  }
+ 
+  void displayBranches() {
+displayQuery("BRANCH LIST", "SELECT BranchID, BranchName, Location, Phone FROM Branch;");
+  }
+  
+ //Customer
+  void addCustomer() {
+  cout << "\n===== ADD CUSTOMER =====\n";
+  string customerID = generateID("Customer", "CustomerID", "C");
+  string fullName = getText("Full Name: ");
+  string gender = getText("Gender: ");
+  string phone = getText("Phone: ");
+  string address = getText("Address: ");
+  string registrationDate = getText("Registration Date: ");
+  string branchID = getText("Branch ID: ");
+string sql = "INSERT INTO Customer VALUES(?, ?, ?, ?, ?, ?, ?);";
+  sqlite3_stmt* stmt = nullptr;
+   if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+  return;
+  }
+ 
+  sqlite3_bind_text(stmt, 1, customerID.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 2, fullName.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 3, gender.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 4, phone.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 5, address.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 6, registrationDate.c_str(), -1, SQLITE_TRANSIENT);
+  sqlite3_bind_text(stmt, 7, branchID.c_str(), -1, SQLITE_TRANSIENT);
+ 
+  if (sqlite3_step(stmt) != SQLITE_DONE)
+  cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+  else
+  cout << "Customer added successfully.\n"
+  << "Generated Customer ID: " << customerID << endl;
+sqlite3_finalize(stmt);
+  }
+   void displayCustomers() {
+  displayQuery("CUSTOMER LIST",
+  "SELECT CustomerID, FullName, Gender, Phone, Address, RegistrationDate, BranchID FROM Customer;");
+  }
 -----------------------------------------------------------------
 Elabem
 ------------------------------------------------------------------
