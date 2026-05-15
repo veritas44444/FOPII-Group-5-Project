@@ -37,8 +37,8 @@ void openDatabase() {
 }
 
 // checks whether a column already exists in a table
- bool columnExists(const string& table, const string& column) {
-   sqlite3_stmt* stmt = nullptr;
+bool columnExists(const string& table, const string& column) {
+    sqlite3_stmt* stmt = nullptr;
     string sql = "PRAGMA table_info(" + table + ");";
 
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
@@ -55,17 +55,15 @@ void openDatabase() {
 
     sqlite3_finalize(stmt);
     return found;
- }
+}
 
- // auto-generate IDs like B001, C001, A001, L001, T001
- string generateID(const string& table, const string& column, const string& prefix) {
+string generateID(const string& table, const string& column, const string& prefix) {
     sqlite3_stmt* stmt = nullptr;
 
     string sql = "SELECT " + column + " FROM " + table +
                  " ORDER BY " + column + " DESC LIMIT 1;";
 
-   string newID = prefix + "001";
-
+    string newID = prefix + "004";
 
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -76,14 +74,15 @@ void openDatabase() {
 
                 if (num < 10) newID = prefix + "00" + to_string(num);
                 else if (num < 100) newID = prefix + "0" + to_string(num);
-               else newID = prefix + to_string(num);
+                else newID = prefix + to_string(num);
             }
         }
     }
 
     sqlite3_finalize(stmt);
     return newID;
- }
+}
+
 
 void createTables() {
     string sql;
@@ -587,23 +586,22 @@ void viewMyTransactions(const string& accountNo) {
                  "FROM Transactions WHERE AccountNo = '" + accountNo + "';";
     displayQuery("MY TRANSACTION HISTORY", sql);
 }
- // ===================== LOGIN =====================
-
+//Login
 bool adminLogin() {
-   const string ADMIN_PASSWORD = "admin123";
-   string password;
-   cout << "\nEnter Admin Password: ";
-   cin >> password;
+    const string ADMIN_PASSWORD = "Gebar@admin123";
+    string password;
+    cout << "\nEnter Admin Password: ";
+    cin >> password;
 
-if (password == ADMIN_PASSWORD) {
+    if (password == ADMIN_PASSWORD) {
         cout << "Admin login successful!\n";
-       return true;
+        return true;
     }
     cout << "Incorrect password. Access denied.\n";
     return false;
- }
+}
 
- string userLogin() {
+string userLogin() {
     string accountNo = getText("\nEnter your Account Number: ");
     string password = getText("Enter Password: ");
 
@@ -620,7 +618,7 @@ if (password == ADMIN_PASSWORD) {
 
     string result = "";
     if (sqlite3_step(stmt) == SQLITE_ROW) {
-       cout << "Account verified. Welcome!\n";
+        cout << "Account verified. Welcome!\n";
         result = accountNo;
     } else {
         cout << "Account not found or wrong password. Access denied.\n";
@@ -628,16 +626,16 @@ if (password == ADMIN_PASSWORD) {
 
     sqlite3_finalize(stmt);
     return result;
- }
+}
 
- // ===================== MENUS =====================
+//Menus
 
- void adminMenu() {
+void adminMenu() {
     int choice;
     do {
-        cout << "\n=====================================\n";
+        cout << "\n***********************************\n";
         cout << "        ADMIN PANEL\n";
-        cout << "=====================================\n";
+        cout << "***********************************\n";
         cout << " 1.  Add Branch\n";
         cout << " 2.  Display Branches\n";
         cout << " 3.  Add Customer\n";
@@ -651,20 +649,20 @@ if (password == ADMIN_PASSWORD) {
         cout << "11.  Add Transaction\n";
         cout << "12.  Display All Transactions\n";
         cout << "13.  Logout\n";
-       cout << "=====================================\n";
-       cout << "Enter choice: ";
-       cin >> choice;
+        cout << "=====================================\n";
+        cout << "Enter choice: ";
+        cin >> choice;
 
-switch (choice) {
-           case 1:  addBranch(); break;
-           case 2:  displayBranches(); break;
+        switch (choice) {
+            case 1:  addBranch(); break;
+            case 2:  displayBranches(); break;
             case 3:  addCustomer(); break;
             case 4:  displayCustomers(); break;
-           case 5:  addEmployee(); break;
-           case 6:  displayEmployees(); break;
+            case 5:  addEmployee(); break;
+            case 6:  displayEmployees(); break;
             case 7:  addAccount(); break;
-           case 8:  displayAccounts(); break;
-           case 9:  addLoan(); break;
+            case 8:  displayAccounts(); break;
+            case 9:  addLoan(); break;
             case 10: displayLoans(); break;
             case 11: addTransaction(); break;
             case 12: displayTransactions(); break;
@@ -673,7 +671,7 @@ switch (choice) {
         }
 
     } while (choice != 13);
- }
+}
 
 void userMenu(const string& accountNo) {
     int choice;
@@ -702,18 +700,18 @@ void userMenu(const string& accountNo) {
     } while (choice != 5);
 }
 
- // ===================== ROLE SELECTION =====================
+//Role-section
 
- void roleSelection() {
+void roleSelection() {
     int role;
     do {
-        cout << "\n=====================================\n";
+        cout << "\n***********************************\n";
         cout << "   GEBAR COMMERCIAL BANK SYSTEM\n";
-        cout << "=====================================\n";
+        cout << "***********************************\n";
         cout << "1. Admin\n";
         cout << "2. User\n";
         cout << "3. Exit\n";
-        cout << "=====================================\n";
+        cout << "***********************************\n";
         cout << "Select your role: ";
         cin >> role;
 
@@ -721,7 +719,8 @@ void userMenu(const string& accountNo) {
             case 1:
                 if (adminLogin())
                     adminMenu();
-       break;
+                break;
+
             case 2: {
                 string accountNo = userLogin();
                 if (!accountNo.empty())
@@ -738,6 +737,11 @@ void userMenu(const string& accountNo) {
         }
 
     } while (role != 3);
- }
-
- // ===================== MAIN =====================
+}
+int main() {
+    openDatabase();
+    createTables();
+    roleSelection();
+    sqlite3_close(db);
+    return 0;
+}
