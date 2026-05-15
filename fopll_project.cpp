@@ -646,9 +646,8 @@ void adminMenu() {
         cout << " 8.  Display Accounts\n";
         cout << " 9.  Add Loan\n";
         cout << "10.  Display Loans\n";
-        cout << "11.  Add Transaction\n";
-        cout << "12.  Display All Transactions\n";
-        cout << "13.  Logout\n";
+        cout << "11.  Display All Transactions\n";
+        cout << "12.  Logout\n";
         cout << "=====================================\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -664,9 +663,8 @@ void adminMenu() {
             case 8:  displayAccounts(); break;
             case 9:  addLoan(); break;
             case 10: displayLoans(); break;
-            case 11: addTransaction(); break;
-            case 12: displayTransactions(); break;
-            case 13: cout << "Logging out from Admin panel...\n"; break;
+            case 11: displayTransactions(); break;
+            case 12: cout << "Logging out from Admin panel...\n"; break;
             default: cout << "Invalid choice.\n";
         }
 
