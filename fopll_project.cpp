@@ -305,6 +305,89 @@ sqlite3_finalize(stmt);
 -----------------------------------------------------------------
 Elabem
 ------------------------------------------------------------------
+
+// ===================== EMPLOYEE =====================
+
+void addEmployee() {
+    cout << "\n===== ADD EMPLOYEE =====\n";
+    string employeeID = generateID("Employee", "EmployeeID", "E");
+    string fullName   = getText("Full Name: ");
+    string position   = getText("Position: ");
+    string email      = getText("Email: ");
+    string phone      = getText("Phone: ");
+    double salary     = getDouble("Salary: ");
+    string branchID   = getText("Branch ID: ");
+
+    string sql = "INSERT INTO Employee VALUES(?, ?, ?, ?, ?, ?, ?);";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt,   1, employeeID.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   2, fullName.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   3, position.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   4, email.c_str(),      -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   5, phone.c_str(),      -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 6, salary);
+    sqlite3_bind_text(stmt,   7, branchID.c_str(),   -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Employee added successfully.\n"
+             << "Generated Employee ID: " << employeeID << endl;
+
+    sqlite3_finalize(stmt);
+}
+
+void displayEmployees() {
+    displayQuery("EMPLOYEE LIST",
+        "SELECT EmployeeID, FullName, Position, Email, Phone, Salary, BranchID FROM Employee;");
+}
+
+// ===================== ACCOUNT =====================
+
+void addAccount() {
+    cout << "\n===== ADD ACCOUNT =====\n";
+    string accountNo   = generateID("Account", "AccountNo", "A");
+    string customerID  = getText("Customer ID: ");
+    string branchID    = getText("Branch ID: ");
+    string accountType = getText("Account Type (Savings/Current): ");
+    double balance     = getDouble("Initial Balance: ");
+    string password    = getText("Password: ");
+
+    string sql = "INSERT INTO Account VALUES(?, ?, ?, ?, ?, ?);";
+    sqlite3_stmt* stmt = nullptr;
+
+if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt,   1, accountNo.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   2, customerID.c_str(),  -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   3, branchID.c_str(),    -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt,   4, accountType.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 5, balance);
+    sqlite3_bind_text(stmt,   6, password.c_str(),    -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Account added successfully.\n"
+             << "Generated Account No: " << accountNo << endl;
+
+    sqlite3_finalize(stmt);
+}
+
+void displayAccounts() {
+    displayQuery("ACCOUNT LIST",
+        "SELECT AccountNo, CustomerID, BranchID, AccountType, Balance FROM Account;");
+}
+    
 -----------------------------------------------------------------
 void addLoan() {
     cout << "\n===== ADD LOAN =====\n";
