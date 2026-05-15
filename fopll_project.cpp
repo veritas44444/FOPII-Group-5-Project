@@ -36,7 +36,7 @@ void openDatabase() {
     executeSQL("PRAGMA foreign_keys = ON;");
 }
 -----------------------------------------------------------------
-    -----> elabam
+
 ------------------------------------------------------------------
 void createTables() {
     string sql;
