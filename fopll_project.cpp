@@ -35,9 +35,56 @@ void openDatabase() {
     }
     executeSQL("PRAGMA foreign_keys = ON;");
 }
------------------------------------------------------------------
-Enjifeto
-------------------------------------------------------------------
+
+// checks whether a column already exists in a table
+ bool columnExists(const string& table, const string& column) {
+   sqlite3_stmt* stmt = nullptr;
+    string sql = "PRAGMA table_info(" + table + ");";
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK)
+        return false;
+
+    bool found = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char* colName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        if (colName && column == colName) {
+            found = true;
+            break;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return found;
+ }
+
+ // auto-generate IDs like B001, C001, A001, L001, T001
+ string generateID(const string& table, const string& column, const string& prefix) {
+    sqlite3_stmt* stmt = nullptr;
+
+    string sql = "SELECT " + column + " FROM " + table +
+                 " ORDER BY " + column + " DESC LIMIT 1;";
+
+   string newID = prefix + "001";
+
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            const char* last = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            if (last) {
+                string lastID = last;
+                int num = stoi(lastID.substr(1)) + 1;
+
+                if (num < 10) newID = prefix + "00" + to_string(num);
+                else if (num < 100) newID = prefix + "0" + to_string(num);
+               else newID = prefix + to_string(num);
+            }
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return newID;
+ }
+
 void createTables() {
     string sql;
 
@@ -457,9 +504,94 @@ void viewMyTransactions(const string& accountNo) {
                  "FROM Transactions WHERE AccountNo = '" + accountNo + "';";
     displayQuery("MY TRANSACTION HISTORY", sql);
 }
------------------------------------------------------------------
-Enjifeto
-------------------------------------------------------------------
+ // ===================== LOGIN =====================
+
+bool adminLogin() {
+   const string ADMIN_PASSWORD = "admin123";
+   string password;
+   cout << "\nEnter Admin Password: ";
+   cin >> password;
+
+if (password == ADMIN_PASSWORD) {
+        cout << "Admin login successful!\n";
+       return true;
+    }
+    cout << "Incorrect password. Access denied.\n";
+    return false;
+ }
+
+ string userLogin() {
+    string accountNo = getText("\nEnter your Account Number: ");
+    string password = getText("Enter Password: ");
+
+    sqlite3_stmt* stmt = nullptr;
+    string sql = "SELECT AccountNo FROM Account WHERE AccountNo = ? AND Password = ?;";
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return "";
+    }
+
+    sqlite3_bind_text(stmt, 1, accountNo.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_TRANSIENT);
+
+    string result = "";
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+       cout << "Account verified. Welcome!\n";
+        result = accountNo;
+    } else {
+        cout << "Account not found or wrong password. Access denied.\n";
+    }
+
+    sqlite3_finalize(stmt);
+    return result;
+ }
+
+ // ===================== MENUS =====================
+
+ void adminMenu() {
+    int choice;
+    do {
+        cout << "\n=====================================\n";
+        cout << "        ADMIN PANEL\n";
+        cout << "=====================================\n";
+        cout << " 1.  Add Branch\n";
+        cout << " 2.  Display Branches\n";
+        cout << " 3.  Add Customer\n";
+        cout << " 4.  Display Customers\n";
+        cout << " 5.  Add Employee\n";
+        cout << " 6.  Display Employees\n";
+        cout << " 7.  Add Account\n";
+        cout << " 8.  Display Accounts\n";
+        cout << " 9.  Add Loan\n";
+        cout << "10.  Display Loans\n";
+        cout << "11.  Add Transaction\n";
+        cout << "12.  Display All Transactions\n";
+        cout << "13.  Logout\n";
+       cout << "=====================================\n";
+       cout << "Enter choice: ";
+       cin >> choice;
+
+switch (choice) {
+           case 1:  addBranch(); break;
+           case 2:  displayBranches(); break;
+            case 3:  addCustomer(); break;
+            case 4:  displayCustomers(); break;
+           case 5:  addEmployee(); break;
+           case 6:  displayEmployees(); break;
+            case 7:  addAccount(); break;
+           case 8:  displayAccounts(); break;
+           case 9:  addLoan(); break;
+            case 10: displayLoans(); break;
+            case 11: addTransaction(); break;
+            case 12: displayTransactions(); break;
+            case 13: cout << "Logging out from Admin panel...\n"; break;
+            default: cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 13);
+ }
+
 void userMenu(const string& accountNo) {
     int choice;
     do {
@@ -486,6 +618,43 @@ void userMenu(const string& accountNo) {
 
     } while (choice != 5);
 }
------------------------------------------------------------------
-Enjifeto
-------------------------------------------------------------------
+
+ // ===================== ROLE SELECTION =====================
+
+ void roleSelection() {
+    int role;
+    do {
+        cout << "\n=====================================\n";
+        cout << "   GEBAR COMMERCIAL BANK SYSTEM\n";
+        cout << "=====================================\n";
+        cout << "1. Admin\n";
+        cout << "2. User\n";
+        cout << "3. Exit\n";
+        cout << "=====================================\n";
+        cout << "Select your role: ";
+        cin >> role;
+
+        switch (role) {
+            case 1:
+                if (adminLogin())
+                    adminMenu();
+       break;
+            case 2: {
+                string accountNo = userLogin();
+                if (!accountNo.empty())
+                    userMenu(accountNo);
+                break;
+            }
+
+            case 3:
+                cout << "Goodbye!\n";
+                break;
+
+            default:
+                cout << "Invalid selection. Please choose 1, 2, or 3.\n";
+        }
+
+    } while (role != 3);
+ }
+
+ // ===================== MAIN =====================
