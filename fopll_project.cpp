@@ -193,8 +193,78 @@ Elsa
 Elabem
 ------------------------------------------------------------------
 -----------------------------------------------------------------
-Kasim
-------------------------------------------------------------------
+void addLoan() {
+    cout << "\n===== ADD LOAN =====\n";
+    string loanID = generateID("Loan", "LoanID", "L");
+    string customerID = getText("Customer ID: ");
+    string loanType = getText("Loan Type: ");
+    double amount = getDouble("Loan Amount: ");
+    string applicationDate = getText("Application Date: ");
+    string branchID = getText("Branch ID: ");
+
+    string sql = "INSERT INTO Loan VALUES(?, ?, ?, ?, ?, ?);";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, loanID.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, customerID.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, loanType.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 4, amount);
+    sqlite3_bind_text(stmt, 5, applicationDate.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 6, branchID.c_str(), -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Loan added successfully.\n"
+             << "Generated Loan ID: " << loanID << endl;
+
+    sqlite3_finalize(stmt);
+}
+
+void displayLoans() {
+    displayQuery("LOAN LIST",
+                 "SELECT LoanID, CustomerID, LoanType, Amount, ApplicationDate, BranchID FROM Loan;");
+}
+
+// ===================== TRANSACTION =====================
+
+void addTransaction() {
+    cout << "\n===== ADD TRANSACTION =====\n";
+    string transactionID = generateID("Transactions", "TransactionID", "T");
+    string accountNo = getText("Account No: ");
+    string branchID = getText("Branch ID: ");
+    string transactionType = getText("Transaction Type: ");
+    double amount = getDouble("Amount: ");
+    string transactionDate = getText("Transaction Date: ");
+
+    string sql = "INSERT INTO Transactions VALUES(?, ?, ?, ?, ?, ?);";
+    sqlite3_stmt* stmt = nullptr;
+
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        cerr << "Prepare failed: " << sqlite3_errmsg(db) << endl;
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, transactionID.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, accountNo.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, branchID.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, transactionType.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(stmt, 5, amount);
+    sqlite3_bind_text(stmt, 6, transactionDate.c_str(), -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+        cerr << "Insert failed: " << sqlite3_errmsg(db) << endl;
+    else
+        cout << "Transaction added successfully.\n"
+             << "Generated Transaction ID: " << transactionID << endl;
+
+    sqlite3_finalize(stmt);
+}
 void displayTransactions() {
     displayQuery("TRANSACTION LIST",
         "SELECT TransactionID, AccountNo, BranchID, TransactionType, Amount, TransactionDate FROM Transactions;");
