@@ -643,17 +643,17 @@ void adminMenu() {
         cin >> choice;
 
         switch (choice) {
-            case 1:  addBranch();pause() break;
-            case 2:  displayBranches();pause() break;
-            case 3:  addCustomer();pause() break;
-            case 4:  displayCustomers();pause() break;
-            case 5:  addEmployee();pause() break;
-            case 6:  displayEmployees(); pause()break;
-            case 7:  addAccount(); pause()break;
-            case 8:  displayAccounts(); pause()break;
-            case 9:  addLoan(); pause()break;
-            case 10: displayLoans();pause() break;
-            case 11: displayTransactions(); pause()break;
+            case 1:  addBranch();pause(); break;
+            case 2:  displayBranches();pause(); break;
+            case 3:  addCustomer();pause(); break;
+            case 4:  displayCustomers();pause(); break;
+            case 5:  addEmployee();pause(); break;
+            case 6:  displayEmployees(); pause();break;
+            case 7:  addAccount(); pause();break;
+            case 8:  displayAccounts(); pause();break;
+            case 9:  addLoan(); pause();break;
+            case 10: displayLoans();pause(); break;
+            case 11: displayTransactions(); pause();break;
             case 12: cout << "Logging out from Admin panel...\n"; break;
             default: cout << "Invalid choice.\n";
         }
