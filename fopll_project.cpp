@@ -301,12 +301,7 @@ sqlite3_finalize(stmt);
   displayQuery("CUSTOMER LIST",
   "SELECT CustomerID, FullName, Gender, Phone, Address, RegistrationDate, BranchID FROM Customer;");
   }
------------------------------------------------------------------
-Elabem
-------------------------------------------------------------------
-
-// ===================== EMPLOYEE =====================
-
+//Employee
 void addEmployee() {
     cout << "\n===== ADD EMPLOYEE =====\n";
     string employeeID = generateID("Employee", "EmployeeID", "E");
@@ -346,9 +341,7 @@ void displayEmployees() {
     displayQuery("EMPLOYEE LIST",
         "SELECT EmployeeID, FullName, Position, Email, Phone, Salary, BranchID FROM Employee;");
 }
-
-// ===================== ACCOUNT =====================
-
+//Account
 void addAccount() {
     cout << "\n===== ADD ACCOUNT =====\n";
     string accountNo   = generateID("Account", "AccountNo", "A");
@@ -425,9 +418,7 @@ void displayLoans() {
     displayQuery("LOAN LIST",
                  "SELECT LoanID, CustomerID, LoanType, Amount, ApplicationDate, BranchID FROM Loan;");
 }
-
-// ===================== TRANSACTION =====================
-
+//Transaction
 void addTransaction() {
     cout << "\n===== ADD TRANSACTION =====\n";
     string transactionID = generateID("Transactions", "TransactionID", "T");
@@ -629,7 +620,6 @@ string userLogin() {
 }
 
 //Menus
-
 void adminMenu() {
     int choice;
     do {
